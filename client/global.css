@@ -1,0 +1,319 @@
+/** @import must precede all other statements */
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --app-viewport-height: 100vh;
+  }
+
+  @supports (height: 100dvh) {
+    :root {
+      --app-viewport-height: 100dvh;
+    }
+  }
+
+  html {
+    width: 100%;
+    min-height: 100%;
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+  }
+
+  /**
+   * Dark mode only - Tailwind CSS theme
+   * tailwind.config.ts expects the following color variables to be expressed as HSL values.
+   * A different format will require also updating the theme in tailwind.config.ts.
+  */
+  :root {
+    --background: 184 44% 5%;
+    --foreground: 164 48% 94%;
+
+    --card: 181 36% 12%;
+    --card-foreground: 164 48% 94%;
+
+    --popover: 181 38% 11%;
+    --popover-foreground: 164 48% 94%;
+
+    --primary: 168 63% 47%;
+    --primary-foreground: 185 45% 6%;
+
+    --secondary: 182 28% 18%;
+    --secondary-foreground: 164 48% 94%;
+
+    --muted: 183 24% 14%;
+    --muted-foreground: 165 18% 72%;
+
+    --accent: 178 34% 22%;
+    --accent-foreground: 164 48% 94%;
+
+    --destructive: 0 76% 54%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 180 24% 29%;
+    --input: 181 32% 12%;
+    --ring: 168 72% 73%;
+
+    --radius: 1rem;
+
+    --sidebar-background: 181 36% 12%;
+
+    --sidebar-foreground: 164 48% 94%;
+
+    --sidebar-primary: 168 63% 47%;
+
+    --sidebar-primary-foreground: 185 45% 6%;
+
+    --sidebar-accent: 182 28% 18%;
+
+    --sidebar-accent-foreground: 164 48% 94%;
+
+    --sidebar-border: 180 24% 29%;
+
+    --sidebar-ring: 168 72% 73%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: "Manrope", sans-serif;
+    -webkit-text-size-adjust: 100%;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(circle at top left, rgba(76, 228, 189, 0.16), transparent 24%),
+      radial-gradient(circle at top right, rgba(24, 101, 92, 0.22), transparent 32%),
+      radial-gradient(circle at bottom center, rgba(34, 197, 151, 0.08), transparent 28%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 24%);
+    background-size: auto;
+    background-position: center;
+    min-height: var(--app-viewport-height);
+  }
+
+  #root {
+    width: 100%;
+    max-width: 100%;
+    min-height: var(--app-viewport-height);
+    overflow-x: clip;
+  }
+
+  img,
+  video,
+  canvas,
+  svg {
+    max-width: 100%;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.4);
+    color: hsl(var(--foreground));
+  }
+
+  :where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  h1 {
+    font-weight: 900;
+    letter-spacing: -0.045em;
+  }
+
+  h2 {
+    font-weight: 800;
+    letter-spacing: -0.04em;
+  }
+
+  pre,
+  code {
+    overflow-x: auto;
+    white-space: pre;
+    font-family: "IBM Plex Mono", monospace;
+  }
+
+  /* Prevent mobile zoom on input focus */
+  input,
+  textarea,
+  select,
+  button {
+    font-size: 16px;
+  }
+
+  button,
+  a,
+  [role="button"],
+  input,
+  textarea,
+  select {
+    touch-action: manipulation;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 9999px;
+    border: 2px solid hsl(var(--background));
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.55);
+  }
+}
+
+@layer components {
+  .app-screen {
+    width: 100%;
+    max-width: 100%;
+    height: var(--app-viewport-height);
+    min-height: var(--app-viewport-height);
+    overflow-x: clip;
+  }
+
+  .app-screen-min {
+    width: 100%;
+    max-width: 100%;
+    min-height: var(--app-viewport-height);
+    overflow-x: clip;
+  }
+
+  .tactical-shell {
+    @apply relative bg-background text-foreground;
+    min-height: var(--app-viewport-height);
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  .tactical-panel {
+    @apply rounded-[28px] border border-border bg-card shadow-[0_28px_70px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-xl;
+  }
+
+  .tactical-panel-soft {
+    @apply rounded-2xl border border-border bg-secondary shadow-[0_16px_38px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.04)];
+  }
+
+  .tactical-input {
+    @apply rounded-2xl border border-border bg-background text-base text-foreground placeholder:text-muted-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_10px_24px_rgba(0,0,0,0.14)] focus:border-primary focus:ring-2 focus:ring-ring focus:ring-offset-0 md:text-sm;
+  }
+
+  .tactical-outline-button {
+    @apply border border-transparent bg-transparent text-foreground/92 shadow-none hover:border-border hover:bg-accent hover:text-foreground;
+  }
+
+  .tactical-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-[1rem] border border-primary bg-primary px-4 py-3 text-center text-primary-foreground shadow-[0_14px_34px_rgba(0,114,92,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] transition-[background-color,border-color,color,box-shadow,transform] duration-200 ease-out hover:border-primary hover:bg-primary hover:shadow-[0_18px_40px_rgba(0,114,92,0.34),inset_0_1px_0_rgba(255,255,255,0.14)] active:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .tactical-button-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-[1rem] border border-border bg-transparent px-4 py-3 text-center text-foreground shadow-none transition-[background-color,border-color,color,box-shadow,transform] duration-200 ease-out hover:border-primary hover:bg-accent active:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .tactical-icon-button {
+    @apply inline-flex items-center justify-center rounded-[1rem] border border-transparent bg-transparent text-muted-foreground transition-[background-color,border-color,color,box-shadow,transform] duration-200 ease-out hover:border-border hover:bg-accent hover:text-foreground active:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .tactical-icon-button-primary {
+    @apply inline-flex items-center justify-center rounded-[1rem] border border-primary bg-primary text-primary-foreground shadow-[0_14px_34px_rgba(0,114,92,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] transition-[background-color,border-color,color,box-shadow,transform] duration-200 ease-out hover:border-primary hover:bg-primary hover:shadow-[0_18px_40px_rgba(0,114,92,0.34),inset_0_1px_0_rgba(255,255,255,0.14)] active:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .tactical-chip-button {
+    @apply inline-flex items-center justify-center rounded-xl border border-border bg-transparent px-3 py-1.5 text-xs font-semibold text-foreground transition-[background-color,border-color,color,box-shadow,transform] duration-200 ease-out hover:border-primary hover:bg-accent active:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .tactical-chip-button-danger {
+    @apply inline-flex items-center justify-center rounded-xl border border-destructive bg-destructive/5 px-3 py-1.5 text-xs font-semibold text-destructive shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-[background-color,border-color,color,box-shadow,transform] duration-200 ease-out hover:border-destructive hover:bg-destructive/10 active:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .tactical-kicker {
+    @apply text-[0.74rem] uppercase tracking-[0.22em] text-muted-foreground;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 800;
+  }
+
+  .app-loader {
+    aspect-ratio: 1.154;
+    position: relative;
+    background:
+      conic-gradient(
+        from 120deg at 50% 64%,
+        transparent,
+        hsl(var(--primary)) 1deg 120deg,
+        transparent 121deg
+      );
+    animation: app-loader-rotate 1.5s infinite cubic-bezier(0.3, 1, 0, 1);
+  }
+
+  .app-loader::before,
+  .app-loader::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: inherit;
+    transform-origin: 50% 66%;
+    animation: app-loader-shift 1.5s infinite;
+  }
+
+  .app-loader::after {
+    --loader-direction: -1;
+  }
+}
+
+@keyframes app-loader-rotate {
+  0%,
+  30% {
+    transform: rotate(0);
+  }
+
+  70% {
+    transform: rotate(120deg);
+  }
+
+  70.01%,
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes app-loader-shift {
+  0% {
+    transform: rotate(calc(var(--loader-direction, 1) * 120deg)) translate(0);
+  }
+
+  30%,
+  70% {
+    transform:
+      rotate(calc(var(--loader-direction, 1) * 120deg))
+      translate(calc(var(--loader-direction, 1) * -5px), 10px);
+  }
+
+  100% {
+    transform: rotate(calc(var(--loader-direction, 1) * 120deg)) translate(0);
+  }
+}

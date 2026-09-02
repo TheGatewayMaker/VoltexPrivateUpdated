@@ -1,0 +1,18 @@
+[Unit]
+Description=Voltex app server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=neoroot
+WorkingDirectory=/home/neoroot/VOLTEX-ACTIVE/voltexsms
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=6661
+ExecStart=/usr/bin/pnpm start
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

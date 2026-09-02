@@ -1,0 +1,2 @@
+export const ADMIN_DASHBOARD_PATH =
+  "/dog/cat/army/table/program/fuck/youtube/wasabi/dogar/pluto/quest/combo/funeral/superman/rocket/pencil/mango/coffee/alien/dragon/bottle/keyboard/satellite/pumpkin/mystery/ninja/unicorn/wizard/planet/guitar/castle/pizza/tornado/cactus/hammer/biscuit/lighthouse/rainbow/tiger/bubble/volcano/sparkle/mushroom/sphinx/glacier/otter/phoenix/quantum/robot/icecream/banana/voltage/monkey/marble/cheese/asteroid/snail/laptop/cobra/falcon/tulip/papaya/magnet/jellyfish/laser/sombrero/goblin/wheel/dashboard";

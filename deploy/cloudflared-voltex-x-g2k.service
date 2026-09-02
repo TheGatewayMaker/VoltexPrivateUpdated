@@ -1,0 +1,13 @@
+[Unit]
+Description=cloudflared tunnel for voltex.x.g2k.site
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/cloudflared --no-autoupdate tunnel run --token-file /etc/cloudflared/voltex-x-g2k.token
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
