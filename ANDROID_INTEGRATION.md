@@ -9,6 +9,10 @@ Reference implementation: `client/lib/crypto.ts`, `client/lib/passphrase.ts`,
 `client/lib/mediaCrypto.ts`, `client/lib/useWebSocket.ts`. Server routes are all
 registered in `server/index.ts`.
 
+The target client is **Flutter/Dart**. Sections 1–13 are platform-neutral protocol;
+§14 covers Dart packages, §15 covers interface parity with the web app, and §16 lists
+hardening requirements.
+
 ## 0. Non-negotiables
 
 An account **is** its keypair. There is no password on the server that grants access to
@@ -401,14 +405,134 @@ Do this before writing any UI. It takes an afternoon and saves weeks.
 `server/integration.spec.ts` and the crypto reference in `client/lib/crypto.ts` are the
 best oracles. `pnpm test` runs the suite against an isolated store.
 
-## 14. Suggested Android libraries
+## 14. Flutter package choices
 
-- **libsodium** via `lazysodium-android` for `crypto_box`, `crypto_sign` and
-  `crypto_sign_seed_keypair`. Do not hand-roll X25519 or Ed25519.
-- **javax.crypto** for AES-256-GCM and PBKDF2-HMAC-SHA256 — both are in the platform.
-- **Android Keystore** for wrapping the private key at rest. The key material itself must
-  remain extractable by your code (you need the raw bytes for libsodium), so wrap it with
-  a Keystore-held AES key rather than trying to store it as a Keystore key directly.
-- **OkHttp** for HTTP and WebSocket; it handles the ticket-in-query-string flow fine.
+The client is being built in Flutter/Dart. Do not hand-roll any primitive below.
+
+| Need | Package | Notes |
+|---|---|---|
+| `crypto_box`, `crypto_sign_detached`, `crypto_sign_seed_keypair` | `sodium_libs` (+ `sodium`) | Real libsodium via FFI. First choice — same library the web client's `tweetnacl` is compatible with. |
+| Pure-Dart fallback | `pinenacl` | Provides `Box`, `SigningKey`, `VerifyKey`. Use only if bundling native libsodium is blocked; verify against the web client before committing to it. |
+| AES-256-GCM, PBKDF2-HMAC-SHA256 | `cryptography` | Needed for the keypair wrapping (§6) and media (§10). `Pbkdf2(macAlgorithm: Hmac.sha256())`. |
+| SHA-256 | `crypto` | For the user id derivation (§2.2). |
+| BIP-39 wordlist | `bip39` | You need the English list only, and index selection must be CSPRNG-driven, not `Random()`. |
+| Key storage at rest | `flutter_secure_storage` | Android Keystore / iOS Keychain backed. See the warning below. |
+| HTTP | `dio` or `http` | `dio` if you want interceptors for the 401 → re-auth and 429 → backoff paths. |
+| WebSocket | `web_socket_channel` | Handles the `?ticket=` query-string flow and exposes close codes, which you need (§8). |
+| State | `riverpod` or `bloc` | Team preference. The web client uses React state plus TanStack Query; nothing about the protocol depends on this. |
+
+**Key storage warning.** libsodium needs the raw 32-byte secret at runtime, so you cannot
+store the identity key *as* a Keystore key. Store the raw bytes in
+`flutter_secure_storage` (which wraps them with a Keystore-held key), read them only when
+needed, and avoid holding them in long-lived Dart objects. Set
+`android:allowBackup="false"` so key material is never included in device backups.
+
+## 15. Interface and product parity
+
+The Flutter app should feel like the same product, not a different app against the same
+API. Read the web pages under `client/pages/` for behaviour; the tokens below come from
+`client/global.css`.
+
+### 15.1 Screens to build
+
+| Web route | Component | Purpose |
+|---|---|---|
+| `/signup` | `SignUp.tsx` | Key generation, 24-word passphrase presentation and confirmation, username choice |
+| `/signin` | `SignIn.tsx` | Challenge/response sign-in, optional passkey step |
+| `/recover` | `Recover.tsx` | Passphrase recovery on a new device |
+| `/conversations` | `Conversations.tsx` | Conversation list with unread counts and last message |
+| `/chat/:id` | `Chat.tsx` | 1:1 thread: send, receive, receipts, delete, images, GIFs |
+| `/groups/:id` | `GroupChat.tsx` | Group thread, member list, admin actions, pinned message |
+| `/group-invites/:inviteId` | `GroupInvite.tsx` | Accept or decline an invitation |
+| `/:username/profile` | `PublicProfile.tsx` | Someone else's profile, block/unblock |
+| `/account` | `Account.tsx` | Own profile, avatar, sessions and devices, passkeys |
+| `/settings` | `Settings.tsx` | Preferences, discoverability, notifications |
+| `/about-v0lt3x` | `AboutVoltex.tsx` | About and privacy explanation |
+
+The admin console (`AdminDashboard.tsx`) is **web only**. Do not port it.
+
+### 15.2 Design tokens
+
+Dark theme only — the web app ships no light theme. HSL values are canonical in
+`client/global.css`; hex is provided for Flutter's `Color(0xFF……)`.
+
+| Token | HSL | Hex |
+|---|---|---|
+| background | `184 44% 5%` | `#071212` |
+| foreground (primary text) | `164 48% 94%` | `#E8F7F3` |
+| card / surface | `181 36% 12%` | `#14292A` |
+| popover | `181 38% 11%` | `#112627` |
+| primary (brand accent) | `168 63% 47%` | `#2CC3A5` |
+| primary foreground | `185 45% 6%` | `#081516` |
+| secondary | `182 28% 18%` | `#213A3B` |
+| muted | `183 24% 14%` | `#1B2B2C` |
+| muted foreground (secondary text) | `165 18% 72%` | `#ABC4BE` |
+| accent | `178 34% 22%` | `#254B4A` |
+| destructive | `0 76% 54%` | `#E33131` |
+| border | `180 24% 29%` | `#385C5C` |
+| input | `181 32% 12%` | `#152828` |
+| focus ring | `168 72% 73%` | `#89ECD8` |
+
+Typography, via `google_fonts`: **Manrope** for body, **Montserrat** for headings (the web
+client uses heavy weights with tight negative letter spacing, roughly `-0.04em` to
+`-0.06em`), **IBM Plex Mono** for identifiers, ids and fingerprints.
+
+Shape: base radius is `1rem`, but surfaces are deliberately rounder than default —
+cards and panels use 22–28 px, pills and badges are fully rounded. Elevation is done with
+large soft shadows plus a 1 px inner highlight, not Material elevation. Prefer flat
+translucent surfaces over Material 3 defaults, and set the app bar and system nav bar to
+the background colour with light icons.
+
+### 15.3 Behaviour to match
+
+Optimistic send with a pending state, then reconcile against the server ACK and its
+authoritative timestamp. Per-message states of sending, sent, delivered and seen. Typing
+and presence come from the WebSocket connection state, not a separate API. Unread counts
+clear on opening a thread via the mark-read endpoint. Deletion offers "for me" and, for
+your own messages, "for everyone". Image messages render inline from the decrypted blob
+with a blurred placeholder while decrypting. Long-press opens the message actions the web
+client exposes on hover. Offline sends queue locally and flush on reconnect — the web
+client does this and users expect it.
+
+## 16. Hardening requirements
+
+The brief was "better and non-hackable". Nothing is unhackable, and any claim otherwise in
+a security review is a red flag. What is achievable is that a compromise of the server, the
+network, or a stolen locked device does not yield message plaintext. Treat the following as
+acceptance criteria, not suggestions.
+
+**Fix what the web client got wrong.** Two items in `KNOWN_ISSUES.md` are worth solving in
+this app: implement key fingerprint verification (§3 there) so users can compare a safety
+number out of band and the server cannot substitute keys undetected; and be ready to
+implement context binding in the signed payload (§1 there) as a coordinated change with
+the web client.
+
+**Transport.** Certificate pinning against the production leaf or intermediate, with a
+documented rotation plan and a backup pin — an unpinned pin-less client is trivially
+MITM-able on a hostile network, and a badly pinned one bricks itself on renewal. Reject
+plaintext HTTP entirely (`android:usesCleartextTraffic="false"`).
+
+**At rest.** Identity key and session token in `flutter_secure_storage` only. Optional
+biometric gate before the key is readable. Local message cache encrypted with a key held
+in the Keystore, not plaintext SQLite. `allowBackup="false"`, and exclude app data from
+cloud backup.
+
+**On screen.** `FLAG_SECURE` on chat screens to block screenshots and exclude content from
+the recents thumbnail. Clear the clipboard after a timeout when a user copies a passphrase.
+Never render the passphrase in a screenshot-able flow without an explicit warning.
+
+**In the binary.** R8 with obfuscation enabled for release builds, `--split-debug-info`,
+and no debug symbols shipped. Strip all logging in release — no plaintext bodies, no keys,
+no tokens, not even truncated. Verify with a release build and `logcat` before shipping.
+
+**Integrity.** Play Integrity API attestation if you need server-side assurance; root and
+emulator detection as signals, never as the only defence. Do not ship a client that trusts
+its own environment.
+
+**Process.** Dependency pinning with a lockfile committed, `dart pub outdated` in CI, and
+a third-party audit of the crypto layer before launch. The crypto layer should be a small,
+isolated, heavily unit-tested module with test vectors captured from the web client, so a
+reviewer can check it in an afternoon.
+
 
 

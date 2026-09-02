@@ -1,13 +1,14 @@
 # Voltex — end-to-end encrypted messaging
 
 Voltex is an end-to-end encrypted chat service. The web app in this repository is the
-reference client and the server it talks to. This repository exists so an Android team
-can build a native client that interoperates with the same accounts, the same messages
-and the same encryption.
+reference client and the server it talks to. This repository exists so a team can build a
+native **Flutter** client that interoperates with the same accounts, the same messages and
+the same encryption.
 
 **Start here:** [`ANDROID_INTEGRATION.md`](./ANDROID_INTEGRATION.md) is the authoritative
-specification — key generation, the message envelope, the HTTP API and the WebSocket
-protocol. [`KNOWN_ISSUES.md`](./KNOWN_ISSUES.md) lists defects and dead code you must
+specification — key generation, the message envelope, the HTTP API, the WebSocket
+protocol, Dart package choices, interface parity with this web app, and the hardening
+requirements. [`KNOWN_ISSUES.md`](./KNOWN_ISSUES.md) lists defects and dead code you must
 know about before designing anything.
 
 ## The one thing that matters most
