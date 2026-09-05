@@ -11,12 +11,6 @@ protocol, Dart package choices, interface parity with this web app, and the hard
 requirements. [`KNOWN_ISSUES.md`](./KNOWN_ISSUES.md) lists defects and dead code you must
 know about before designing anything.
 
-**Building with an AI code generator?** [`FLUTTER_PROMPT_PACK.md`](./FLUTTER_PROMPT_PACK.md)
-is a self-contained set of seven prompts that needs no access to this repository. It
-carries the full protocol contract with request and response shapes captured from a live
-server, the design tokens, and deterministic crypto test vectors generated from the real
-implementation — paste Prompt 1 first.
-
 **Notifications:** [`Information-Notifications.md`](./Information-Notifications.md) is the
 complete client-side contract for push. Voltex uses self-hosted ntfy over UnifiedPush — no
 Firebase, no FCM, no third party — and a wake-up deliberately carries no information at all.
