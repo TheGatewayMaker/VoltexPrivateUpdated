@@ -487,6 +487,7 @@ export const handleSendMessage: RequestHandler = async (req, res) => {
         recipientId,
         delivered,
         recipientWasConnected,
+        senderDeviceId: session.deviceId,
       });
     }
 

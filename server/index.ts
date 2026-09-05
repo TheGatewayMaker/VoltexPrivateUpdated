@@ -205,6 +205,10 @@ import {
   handleAdminPanelInspectRestorePoint,
   handleAdminPanelRestorePointDetail,
 } from "./routes/backups";
+import {
+  handleRegisterPushDevice,
+  handleUnregisterPushDevice,
+} from "./routes/push";
 
 // WebSocket server instance (shared across all connections)
 let wssInstance: WebSocketServer | null = null;
@@ -385,6 +389,19 @@ export async function createServer(): Promise<{
     "/api/devices/history-keys/init",
     createRateLimiter(RATE_LIMITS.AUTH),
     handleInitializeHistoryKey,
+  );
+
+  // Self-hosted push wake-ups (UnifiedPush / ntfy). Registration is bound to the
+  // calling session's device; the wake-up itself carries no information.
+  app.post(
+    "/api/push/register",
+    createRateLimiter(RATE_LIMITS.PROFILE_UPDATE),
+    handleRegisterPushDevice,
+  );
+  app.delete(
+    "/api/push/register",
+    createRateLimiter(RATE_LIMITS.PROFILE_UPDATE),
+    handleUnregisterPushDevice,
   );
   app.get("/api/auth/passkeys/status", handleGetPasskeyStatus);
   app.post(
@@ -1210,6 +1227,7 @@ export async function createServer(): Promise<{
               recipientId: encryptedMessage.recipientId,
               delivered,
               recipientWasConnected,
+              senderDeviceId: session.deviceId,
             });
 
             // Send ACK back to sender with original client message ID and server timestamp

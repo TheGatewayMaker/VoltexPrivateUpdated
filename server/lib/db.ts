@@ -324,6 +324,21 @@ async function createTables(): Promise<void> {
 
     CREATE INDEX IF NOT EXISTS idx_device_link_requests_user_status
     ON device_link_requests(user_id, status, created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS push_registrations (
+      user_id VARCHAR(255) NOT NULL,
+      device_id VARCHAR(255) NOT NULL,
+      topic VARCHAR(64) NOT NULL,
+      created_at BIGINT NOT NULL,
+      last_wake_at BIGINT,
+      UNIQUE (user_id, device_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_push_registrations_user
+    ON push_registrations(user_id, created_at DESC);
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_push_registrations_topic
+    ON push_registrations(topic);
   `;
 
   const createProfilesTable = `

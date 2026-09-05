@@ -33,6 +33,7 @@ import {
   updateGroupMetadata,
 } from "../lib/group-store";
 import { notifyUserEvent } from "../lib/messaging";
+import { sendWakeup } from "../lib/push-notifications";
 import {
   GroupInviteSummary,
   GroupMessageEnvelope,
@@ -375,10 +376,20 @@ export const handleInviteToGroup: RequestHandler = async (req, res) => {
 
     const summary = await buildInviteSummary(invite.id);
     if (summary) {
-      notifyUserEvent(invitedUserId, {
+      const deliveredInRealtime = notifyUserEvent(invitedUserId, {
         type: "group-invite",
         data: { invite: summary },
       });
+
+      if (!deliveredInRealtime) {
+        try {
+          await sendWakeup(invitedUserId, {
+            excludeDeviceId: session.deviceId,
+          });
+        } catch (error) {
+          console.error("[PUSH] Failed to send group invite wake-up:", error);
+        }
+      }
     }
 
     return res.status(201).json({
@@ -795,6 +806,8 @@ export const handleSendGroupMessage: RequestHandler = async (req, res) => {
 
     await storeGroupMessage(message);
 
+    const membersToWake: string[] = [];
+
     for (const member of activeMembers) {
       if (member.userId === session.userId) {
         continue;
@@ -820,6 +833,18 @@ export const handleSendGroupMessage: RequestHandler = async (req, res) => {
         if (updated) {
           emitGroupReceiptUpdate(group, updated);
         }
+      } else {
+        membersToWake.push(member.userId);
+      }
+    }
+
+    // Members without a live socket get a contentless wake-up so a killed app can
+    // reconnect and fetch. Nothing about the group or the sender is published.
+    for (const memberId of membersToWake) {
+      try {
+        await sendWakeup(memberId, { excludeDeviceId: session.deviceId });
+      } catch (error) {
+        console.error("[PUSH] Failed to send group message wake-up:", error);
       }
     }
 

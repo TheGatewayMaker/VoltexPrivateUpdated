@@ -47,6 +47,10 @@ function getForwardedIp(req: any): string {
 // Store rate limit data per user
 const userRateLimits = new Map<string, Map<string, UserRateLimitData>>();
 
+// Reserved bucket for internal (non-HTTP) event coalescing. Namespaced so it can
+// never collide with a hashed request identifier, which is always hex.
+const COALESCED_BUCKET = "internal:coalesced";
+
 /**
  * Get user identifier from request
  */
@@ -119,6 +123,36 @@ export function createRateLimiter(config: RateLimitConfig): RequestHandler {
 
     next();
   };
+}
+
+/**
+ * Coalesces repeated internal events that share a key into one action per
+ * window. Unlike createRateLimiter this is not HTTP middleware: it is used by
+ * background work such as push wake-ups, where ten messages arriving in a few
+ * seconds must produce a single wake-up per device rather than ten.
+ *
+ * Returns true when the caller should act, false when an earlier call already
+ * covered this window. Entries are cleaned up by startRateLimitCleanup.
+ */
+export function shouldAllowCoalescedEvent(
+  key: string,
+  windowMs: number,
+): boolean {
+  const now = Date.now();
+  let bucket = userRateLimits.get(COALESCED_BUCKET);
+  if (!bucket) {
+    bucket = new Map();
+    userRateLimits.set(COALESCED_BUCKET, bucket);
+  }
+
+  const existing = bucket.get(key);
+  if (existing && now <= existing.resetTime) {
+    existing.count++;
+    return false;
+  }
+
+  bucket.set(key, { count: 1, resetTime: now + windowMs });
+  return true;
 }
 
 /**

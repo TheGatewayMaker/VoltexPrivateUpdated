@@ -17,6 +17,11 @@ carries the full protocol contract with request and response shapes captured fro
 server, the design tokens, and deterministic crypto test vectors generated from the real
 implementation — paste Prompt 1 first.
 
+**Notifications:** [`Information-Notifications.md`](./Information-Notifications.md) is the
+complete client-side contract for push. Voltex uses self-hosted ntfy over UnifiedPush — no
+Firebase, no FCM, no third party — and a wake-up deliberately carries no information at all.
+Read it before touching notification code.
+
 ## The one thing that matters most
 
 Messages are encrypted on the sending device and decrypted on the receiving device. The

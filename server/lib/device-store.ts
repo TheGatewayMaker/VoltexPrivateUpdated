@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 import { UserDeviceRecord } from "@shared/crypto";
 import { isDatabaseConnected, query, queryOne } from "./db";
+import { deletePushRegistrationsForDevice } from "./push-store";
 import { storageRoot } from "./storage-paths";
 
 function getDevicesRoot(): string {
@@ -266,5 +267,8 @@ export async function revokeUserDevice(
     status: "revoked",
     revokedAt: Date.now(),
   });
+
+  // A revoked device must also lose the ability to be woken.
+  await deletePushRegistrationsForDevice(userId, deviceId);
   return true;
 }
